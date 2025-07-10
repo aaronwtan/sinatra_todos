@@ -188,3 +188,7 @@ post "/lists/:list_id/complete_all" do
   session[:success] = "All todos have been completed."
   redirect "/lists/#{list_id}"
 end
+
+not_found do
+  erb :not_found, layout: :layout
+end
