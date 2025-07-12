@@ -6,6 +6,7 @@ require "tilt/erubi"
 configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
+  set :erb, :escape_html => true
 end
 
 helpers do
@@ -78,6 +79,16 @@ def error_for_todo(name)
   "Todo must be between 1 and 100 characters." unless (1..100).cover? name.size
 end
 
+# Validate URL id
+def validate_id(id)
+  if (0...session[:lists].size).cover?(id.to_i) && id.to_i.to_s == id
+    id.to_i
+  else
+    session[:error] = "The specified list was not found."
+    redirect "/lists"
+  end
+end
+
 # Create a new list
 post "/lists" do
   list_name = params[:list_name].strip
@@ -96,7 +107,7 @@ end
 
 # View a single list
 get "/lists/:list_id" do
-  @list_id = params[:list_id].to_i
+  @list_id = validate_id(params[:list_id])
   @list = session[:lists][@list_id]
 
   erb :list, layout: :layout
@@ -104,7 +115,7 @@ end
 
 # Render the edit list form
 get "/lists/:list_id/edit" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   @list = session[:lists][list_id]
 
   erb :edit_list, layout: :layout
@@ -112,7 +123,7 @@ end
 
 # Update an existing todo list
 post "/lists/:list_id" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   @list = session[:lists][list_id]
   list_name = params[:list_name].strip
 
@@ -130,7 +141,7 @@ end
 
 # Delete a todo list
 post "/lists/:list_id/destroy" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   session[:lists].delete_at(list_id)
   session[:success] = "The list has been deleted."
   redirect "/lists"
@@ -138,7 +149,7 @@ end
 
 # Add a new todo to a list
 post "/lists/:list_id/todos" do
-  @list_id = params[:list_id].to_i
+  @list_id = validate_id(params[:list_id])
   @list = session[:lists][@list_id]
   text = params[:todo].strip
 
@@ -156,7 +167,7 @@ end
 
 # Delete a todo
 post "/lists/:list_id/todos/:todo_id/destroy" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   list = session[:lists][list_id]
 
   todo_id = params[:todo_id].to_i
@@ -168,7 +179,7 @@ end
 
 # Update the status of a todo
 post "/lists/:list_id/todos/:todo_id" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   list = session[:lists][list_id]
 
   todo_id = params[:todo_id].to_i
@@ -181,7 +192,7 @@ end
 
 # Mark all todos as complete for a list
 post "/lists/:list_id/complete_all" do
-  list_id = params[:list_id].to_i
+  list_id = validate_id(params[:list_id])
   list = session[:lists][list_id]
 
   list[:todos].each { |todo| todo[:completed] = true }
