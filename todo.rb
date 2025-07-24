@@ -9,6 +9,8 @@ configure do
   set :erb, :escape_html => true
 end
 
+MESSAGE = []
+
 helpers do
   def list_complete?(list)
     todos_count(list).positive? && todos_remaining_count(list).zero?
@@ -48,6 +50,11 @@ end
 
 before do
   session[:lists] ||= []
+end
+
+get '/test' do
+  MESSAGES << 'baby'
+  puts MESSAGES
 end
 
 get "/" do
