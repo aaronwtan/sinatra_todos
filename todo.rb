@@ -9,7 +9,7 @@ configure do
   set :erb, :escape_html => true
 end
 
-MESSAGE = []
+MESSAGES = []
 
 helpers do
   def list_complete?(list)
@@ -54,7 +54,7 @@ end
 
 get '/test' do
   MESSAGES << 'baby'
-  puts MESSAGES
+  MESSAGES
 end
 
 get "/" do
